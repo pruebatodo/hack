@@ -1,54 +1,29 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import {  getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+const boletosDisponibles = Array.from({ length: 60000 }, (_, index) => 
+  ` ${String(index + 1).padStart(5, '0')}`
+);
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC7_FF9zCatiybPL7BBhtpt-cbKxQdvPHQ",
-  authDomain: "loteria-prueba-ll.firebaseapp.com",
-  databaseURL: "https://loteria-prueba-ll-default-rtdb.firebaseio.com",
-  projectId: "loteria-prueba-ll",
-  storageBucket: "loteria-prueba-ll.appspot.com",
-  messagingSenderId: "266376757381",
-  appId: "1:266376757381:web:47c0ec87c0aa3605e869ec"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const database = getDatabase(firebaseApp);
-
-const boletosSeleccionados = [];
-let bloquearGeneracion = false; // Variable de control
+let boletosSeleccionados = [];
 
 function mostrarNumerosDisponibles() {
-  
-   const numerosRef = ref(database, 'boletos');
+  const contenedorNumeros = document.getElementById('contenedorNumeros');
+  contenedorNumeros.innerHTML = '';
+
+  boletosDisponibles.forEach((boleto) => {
+      const boton = document.createElement('button');
+      boton.textContent = boleto;
+      boton.addEventListener('click', () => seleccionarBoleto(boleto));
+      contenedorNumeros.appendChild(boton);
+      boton.style.borderRadius = '10px';
+      boton.style.fontFamily = 'Arial, sans-serif';
+      boton.style.fontWeight = 'bold';
+      boton.style.fontSize = '16px';
+      boton.style.textTransform = 'uppercase';
+  });
+
+  contenedorNumeros.style.backgroundColor = '#70b578';
+  contenedorNumeros.style.border = '15px solid #008F39';
+}
  
-   onValue(numerosRef, (numerosSnapshot) => {
-     const contenedorNumeros = document.getElementById('contenedorNumeros');
-     contenedorNumeros.innerHTML = '';
- 
-     numerosSnapshot.forEach((numerosChildSnapshot) => {
-       const numero = numerosChildSnapshot.key;
-       const estadoNumero = numerosChildSnapshot.val().estado;
- 
-       if (estadoNumero === 'disponible') {
-         const numeroFormateado = ('00000' + numero).slice(-5);
- 
-         const boton = document.createElement('button');
-         boton.textContent = numeroFormateado;
-         boton.addEventListener('click', () => seleccionarBoleto(numero));
- 
-         contenedorNumeros.appendChild(boton);
-         boton.style.borderRadius = '10px';  // Puedes ajustar el valor según tus preferencias
-        boton.style.fontFamily = 'Arial, sans-serif';  // Cambia la fuente según tus preferencias
-        boton.style.fontWeight = 'bold';  // Ajusta el grosor de la fuente
-        boton.style.fontSize = '16px';  // Puedes ajustar el tamaño de la fuente según tus preferencias
-        boton.style.textTransform = 'uppercase';  // Cambia el texto a mayúsculas
-       }
-     });
-     // Establecer el borde verde alrededor de todos los números
-    contenedorNumeros.style.backgroundColor = '#70b578';  // Puedes ajustar el color según tus preferencias
-    contenedorNumeros.style.border = '15px solid #008F39';
-   });
- }
  
 const contenedorNumeros = document.getElementById('contenedorNumeros');
 
@@ -62,8 +37,7 @@ contenedorNumeros.addEventListener('click', (event) => {
 });
 
 function mostrarNumeroArriba(numero) {
-  // Implementa la lógica para mostrar el número arriba
-  // Aquí puedes agregar la lógica para mostrar el número en algún lugar de tu interfaz de usuario
+
 }
 
 
@@ -96,37 +70,32 @@ function seleccionarBoleto(numeroSeleccionado) {
 }
 
 
-// Función para obtener números aleatorios
 function obtenerNumerosAleatorios(callback) {
-  
-  // Realizar consulta a Firebase para obtener las oportunidades disponibles
-  onValue(ref(database, 'oportunidades404'), (snapshot) => {
-    const oportunidadesDisponibles = [];
+  const boletosDisponibles = Array.from({ length: 60000 }, (_, index) => 
+    `${String(index + 1).padStart(5, '0')}`
+  );
 
-    // Obtener las oportunidades disponibles
-    snapshot.forEach((childSnapshot) => {
-      const oportunidad = childSnapshot.val();
-      if (oportunidad.estado === 'disponible') {
-        oportunidadesDisponibles.push(childSnapshot.key);
-      }
-    });
+  const cantidadBoletos = 5; 
+  const boletosAleatorios = [];
 
-    // Generar números aleatorios únicos dentro del rango de las oportunidades disponibles
-    const numerosAleatorios = [];
-    while (numerosAleatorios.length < 5 && oportunidadesDisponibles.length > 0) {
-      const index = Math.floor(Math.random() * oportunidadesDisponibles.length);
-      const numeroAleatorio = oportunidadesDisponibles[index];
-      numerosAleatorios.push(numeroAleatorio);
-      oportunidadesDisponibles.splice(index, 1); // Eliminar la oportunidad asignada de la lista de disponibles
+  while (boletosAleatorios.length < cantidadBoletos) {
+    const indiceAleatorio = Math.floor(Math.random() * boletosDisponibles.length);
+    const boletoAleatorio = boletosDisponibles[indiceAleatorio];
+
+    if (!boletosAleatorios.includes(boletoAleatorio)) {
+      boletosAleatorios.push(boletoAleatorio);
     }
+  }
 
-    callback(numerosAleatorios);
-  });
+  callback(boletosAleatorios);
 }
 
-let costoTotal = 0;
 
-const precioUnitario = 10;
+
+
+let costoTotal = 5;
+
+const precioUnitario = 0;
 
 function mostrarNumerosAleatorios(boletos) {
   const contenedorOportunidadesSeleccionadas = document.getElementById('contenedorOportunidadesSeleccionadas');
@@ -134,73 +103,68 @@ function mostrarNumerosAleatorios(boletos) {
   contenedorOportunidadesSeleccionadas.innerHTML = '';
 
   if (boletos.length > 0) {
-    const encabezadoNumeroBoleto = document.createElement('h3');
-    encabezadoNumeroBoleto.id = 'encabezadoNumeroBoleto';
-    encabezadoNumeroBoleto.textContent = 'Oportunidades';
+      const encabezadoNumeroBoleto = document.createElement('h3');
+      encabezadoNumeroBoleto.id = 'encabezadoNumeroBoleto';
+      encabezadoNumeroBoleto.textContent = 'Oportunidades';
 
-    contenedorOportunidadesSeleccionadas.style.display = 'flex';
-    contenedorOportunidadesSeleccionadas.style.flexDirection = 'column';
-    contenedorOportunidadesSeleccionadas.style.alignItems = 'center';
+      contenedorOportunidadesSeleccionadas.style.display = 'flex';
+      contenedorOportunidadesSeleccionadas.style.flexDirection = 'column';
+      contenedorOportunidadesSeleccionadas.style.alignItems = 'center';
 
-    contenedorOportunidadesSeleccionadas.appendChild(encabezadoNumeroBoleto);
+      contenedorOportunidadesSeleccionadas.appendChild(encabezadoNumeroBoleto);
   } else {
-    contenedorOportunidadesSeleccionadas.style.display = 'none';
-    return;
+      contenedorOportunidadesSeleccionadas.style.display = 'none';
+      return;
   }
 
   boletos.forEach((boleto) => {
-    const numeroBoleto = boleto.numero;
-    const oportunidades = boleto.oportunidades;
+      const numeroBoleto = boleto.numero;
+      const oportunidades = boleto.oportunidades;
 
-    const nuevoContenedorBoleto = document.createElement('div');
-    nuevoContenedorBoleto.id = `boleto-${numeroBoleto}`;
-    nuevoContenedorBoleto.className = 'boleto-container';
-    nuevoContenedorBoleto.style.display = 'flex';
-    nuevoContenedorBoleto.style.flexDirection = 'row';
-    nuevoContenedorBoleto.style.alignItems = 'flex-start';
+      const nuevoContenedorBoleto = document.createElement('div');
+      nuevoContenedorBoleto.id = `boleto-${numeroBoleto}`;
+      nuevoContenedorBoleto.className = 'boleto-container';
+      nuevoContenedorBoleto.style.display = 'flex';
+      nuevoContenedorBoleto.style.flexDirection = 'row';
+      nuevoContenedorBoleto.style.alignItems = 'flex-start';
 
-    const botonBoletoNegro = document.createElement('button');
-    botonBoletoNegro.textContent = numeroBoleto;
-    botonBoletoNegro.style.backgroundColor = '#000';
-    botonBoletoNegro.style.color = '#fff';
+      const botonBoletoNegro = document.createElement('button');
+      botonBoletoNegro.textContent = numeroBoleto;
+      botonBoletoNegro.style.backgroundColor = '#000';
+      botonBoletoNegro.style.color = '#fff';
 
-    const contenidoOportunidades = document.createElement('p');
-    contenidoOportunidades.textContent = `[${oportunidades.join(', ')}]`;
-    contenidoOportunidades.style.margin = '0';
-    contenidoOportunidades.style.fontSize = '14px';
+      const contenidoOportunidades = document.createElement('p');
+      contenidoOportunidades.textContent = `[${oportunidades.join(', ')}]`;
+      contenidoOportunidades.style.margin = '0';
+      contenidoOportunidades.style.fontSize = '14px';
 
-    nuevoContenedorBoleto.appendChild(botonBoletoNegro);
-    nuevoContenedorBoleto.appendChild(contenidoOportunidades);
+      nuevoContenedorBoleto.appendChild(botonBoletoNegro);
+      nuevoContenedorBoleto.appendChild(contenidoOportunidades);
 
-    contenedorOportunidadesSeleccionadas.appendChild(nuevoContenedorBoleto);
+      contenedorOportunidadesSeleccionadas.appendChild(nuevoContenedorBoleto);
   });
 
-  // boletos seleccionados
   const cantidadBoletosSeleccionados = boletos.length;
   const contenedorCantidadBoletos = document.createElement('div');
   contenedorCantidadBoletos.id = 'contenedorCantidadBoletos';
-  contenedorCantidadBoletos.textContent = `${cantidadBoletosSeleccionados} BOLETO SELECCIONADO `;
+  contenedorCantidadBoletos.textContent = `${cantidadBoletosSeleccionados} BOLETO(S) SELECCIONADO(S)`;
   contenedorOportunidadesSeleccionadas.appendChild(contenedorCantidadBoletos);
 
-  // costo total
   costoTotal = cantidadBoletosSeleccionados * precioUnitario;
   const contenedorCostoTotal = document.createElement('div');
   contenedorCostoTotal.id = 'contenedorCostoTotal';
   contenedorCostoTotal.textContent = `Costo Total: $${costoTotal}`;
   contenedorOportunidadesSeleccionadas.appendChild(contenedorCostoTotal);
 
-const botonReservar = document.createElement('button');
+  const botonReservar = document.createElement('button');
   botonReservar.id = 'botonReservar';
   botonReservar.textContent = 'Reservar';
   botonReservar.addEventListener('click', mostrarVentanaEmergente);
-  bloquearGeneracion = true;
-  // Establecer estilos CSS al botón
-botonReservar.style.backgroundColor = '#000'; // Cambia el color de fondo del botón
-botonReservar.style.color = 'white'; // Cambia el color del texto del botón
-  //  botón Reservar
-  if (boletos.length > 0) {
-    contenedorOportunidadesSeleccionadas.appendChild(botonReservar);
-  }
+  botonReservar.style.backgroundColor = '#000'; 
+  botonReservar.style.color = 'white';
+  botonReservar.disabled = cantidadBoletosSeleccionados === 0; 
+
+  contenedorOportunidadesSeleccionadas.appendChild(botonReservar);
 }
 function bloquearSeleccionBoletos() {
   const contenedorNumeros = document.getElementById('contenedorNumeros');
@@ -253,94 +217,68 @@ function mostrarVentanaEmergente() {
     "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
     "Chihuahua", "Coahuila", "Colima", "Durango", "Guanajuato", "Guerrero", "Hidalgo",
     "Jalisco", "México", "Michoacán", "Morelos", "Nayarit", "Nuevo León", "Oaxaca",
-    "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora",
+    "Puebla", "Mexico", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora",
     "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
 ];
 
 const selectEstado = document.createElement('select');
 selectEstado.id = 'selectEstado';
 
-// Agrega opciones al select basadas en la lista de estados de México
 estadosMexico.forEach(estado => {
     const option = document.createElement('option');
     option.value = estado;
     option.textContent = estado;
     selectEstado.appendChild(option);
 });
+const mensajeadicional = document.createElement('h8');
+mensajeadicional.textContent = '¡Al finalizar serás redirigido a número para enviar la información de tu boleto!';
 
-  const mensajeadicional = document.createElement('h8');
-  mensajeadicional.textContent = '¡Al finalizar serás redirigido a numero para enviar la información de tu boleto!';
+const botonEnviarReserva = document.createElement('button');
+botonEnviarReserva.textContent = 'RESERVAR BOLETOS';
+botonEnviarReserva.addEventListener('click', () => {
+    const numeronumero = camponumero.value;
+    const nombre = campoNombre.value;
+    const apellido = campoApellido.value;
+    const estadoSeleccionado = selectEstado.value;
 
-  const botonEnviarReserva = document.createElement('button');
-  botonEnviarReserva.textContent = 'RESERVAR BOLETOS';
-  botonEnviarReserva.addEventListener('click', async () => {
-      const numeronumero = camponumero.value;
-      const nombre = campoNombre.value;
-      const apellido = campoApellido.value;
-      const estadoSeleccionado = selectEstado.value;
-     
+    if (numeronumero && /^\d+$/.test(numeronumero) && nombre && apellido && estadoSeleccionado) {
+        const cantidadBoletos = boletosSeleccionados.length;
 
-      if (numeronumero && /^\d+$/.test(numeronumero) && nombre && apellido && estadoSeleccionado) {
-          const cantidadBoletos = boletosSeleccionados.length;
-       
-          try {
-              await Promise.all(boletosSeleccionados.map(async (boleto) => {
-                  const boletoNumero = boleto.numero;
-                  const oportunidades = boleto.oportunidades;
-  
-                  // Actualizar el estado del boleto y sus oportunidades
-                  await set(ref(database, `boletos/${boletoNumero}/estado`), 'reservado');
-                  await set(ref(database, `boletos/${boletoNumero}/oportunidades`), oportunidades);
-                  
-                  // Guardar la información adicional del boleto en Firebase
-                  await set(ref(database, `boletos/${boletoNumero}/informacionAdicional`), {
-                      nombre: nombre,
-                      apellido: apellido,
-                      numero: numeronumero,
-                      estado: estadoSeleccionado
-                  });
-  
-                 
-                  
-              }));
+        const mensaje = `Hola, ¡He apartado boletos para la rifa!
+**RIFA ENTRE AMIGOS Mexico**
 
-        
-        const mensaje = `Hola, Aparte boletos de la rifa!!
-    RIFA ENTRE AMIGOS QUERÉTARO
-       
-    BOLETOS SELECCIONADOS (${cantidadBoletos} boletos):
-        ${boletosSeleccionados.map(boleto => `*${boleto.numero}* (${boleto.oportunidades.join(', ')})`).join('\n')}
-        
-    Nombre: ${nombre} ${apellido}
-      
-        
-    Enlace para ver las cuentas de pago \n
-    https://rifaentreamigos-qro.000webhostapp.com/cuentas.html\n
-    El siguiente paso es enviar foto del comprobante de pago por este medio:\n
-    Costo Total: ${costoTotal} pesos MX
-    Celular: ${numeronumero}`;  
-        const urlnumero = `https://wa.me/${tunumero}?text=${encodeURIComponent(mensaje)}`;
-  
+**Boletos seleccionados (${cantidadBoletos} boletos):**
+${boletosSeleccionados.map(boleto => `*${boleto.numero}* (Oportunidades: ${boleto.oportunidades.join(', ')})`).join('\n')}
+
+**Nombre:** ${nombre} ${apellido}
+
+**Enlace para ver las cuentas de pago:**
+https://tulinkdecuentas/cuentas.html
+
+**El siguiente paso es enviar la foto del comprobante de pago por este medio.**
+
+**Costo Total:** {Tu costo de boletos} pesos MX
+**Celular:** {numeronumero}`;
+
+        const urlnumero = `https://wa.me/+51944218045?text=${encodeURIComponent(mensaje)}`;
+
         const temporizador = document.createElement('p');
-        temporizador.textContent = 'Redirigiendo';
+        temporizador.textContent = 'Redirigiendo...';
         ventanaEmergente.appendChild(temporizador);
-  
-        setTimeout(() => {
-          window.location.href = urlnumero;
-        }, 2000);
-      } catch (error) {
-        console.error("Error al reservar boletos:", error);
-      }
-    } else {
-      alert('Por favor, ingrese un número de numero válido.');
-    }
-  });
 
-  const botonCerrar = document.createElement('span');
+        setTimeout(() => {
+            window.location.href = urlnumero;
+        }, 2000);
+    } else {
+        alert('Por favor, ingrese un número de número válido.');
+    }
+});
+
+const botonCerrar = document.createElement('span');
 botonCerrar.className = 'cerrar-ventana';
 botonCerrar.innerHTML = 'X';
 botonCerrar.addEventListener('click', () => {
-  cerrarVentanaEmergente(ventanaEmergente, fondoObscuro);
+    cerrarVentanaEmergente(ventanaEmergente, fondoObscuro);
 });
 
   ventanaEmergente.appendChild(botonCerrar);
@@ -363,16 +301,11 @@ botonCerrar.addEventListener('click', () => {
     const apellido = campoApellido.value;
     const estadoSeleccionado = selectEstado.value;
 
-    // Verifica que todos los campos estén completos y el estado sea seleccionado
     const informacionCompleta = numeronumero && /^\d+$/.test(numeronumero) && nombre && apellido && estadoSeleccionado;
 
-    // Habilita o deshabilita el botón de enviar dependiendo de si toda la información está completa
     botonEnviarReserva.disabled = !informacionCompleta;
 }
 }
-
-
-
 
 function cerrarVentanaEmergente(ventanaEmergente, fondoObscuro) {
   if (ventanaEmergente && fondoObscuro) {
@@ -396,19 +329,13 @@ document.getElementById('btnMaquinaSuerte').addEventListener('click', function()
 function abrirVentanaEmergente() {
   bloquearSeleccionBoletos();
 
-  // Crea un contenedor div para la ventana emergente
   var ventanaEmergente = document.createElement('div');
   ventanaEmergente.className = 'ventana-emergente';
 
-   // Agrega una capa semitransparente para cubrir toda la página
    var fondoOscuro = document.createElement('div');
    fondoOscuro.className = 'fondo-oscuro';
    document.body.appendChild(fondoOscuro);
- // <option value="5">5</option>
-            // <option value="10">10</option>
-            // <option value="15">15</option>
-            // <option value="20">20</option>
-  // Contenido HTML de la ventana emergente
+
 ventanaEmergente.innerHTML = `
 <style>
 #boletosGeneradosContainer ul {
@@ -444,80 +371,114 @@ ventanaEmergente.innerHTML = `
 
 </STYLE>
 <div class="contenido-ventana" style= border: 2px solid #ccc; border-radius: 10px; background-color: #f0f0f0; max-width: 400px; margin: 0 auto;"><br><br>
-    <h2 style="text-align: center; font-size: 24px; margin-bottom: 20px; color: #333;">Máquina de la Suerte</h2>
-    <form id="formMaquinaSuerte">
-        <label for="numBoletos" style="display: block; margin-bottom: 10px; color: #333;">Cantidad de Boletos:</label>
-        <select id="numBoletos" style="width: 100%; padding: 10px; margin-bottom: 20px;">
-            <option value="" selected disabled>Selecciona</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select>
-        <button id="generarBoletosBtn" type="button" disabled style="width: 100%; font-size: 15px; padding: 10px; background-color: #000; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">Generar Boletos</button>
-        <div id="boletosGeneradosContainer" style="max-height: 150px; width: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;"></div>
-    </form>
+    <h2 style="text-align: center; font-size: 24px; margin-bottom: 20px; color: #333;">Modo demo</h2>
+    
     <button id="cerrarVentana" class="cerrar-ventana" style="width: 50px; padding: 5px; background-color: #dc3545; font-size: 15px; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">Cerrar</button>
-    <div id="cargando" style="display: none; text-align: center;">
-        <img src="public_html/assets/imgs/gifnew.gif" alt="Cargando..." style="width: 200px; height: auto;">
-    </div>
-</div>
+    
 `;
 
+const boletosDisponibles = Array.from({ length: 60000 }, (_, index) => `Boleto ${index + 1}`);
+const oportunidadesDisponibles = Array.from({ length: 10 }, (_, index) => `Oportunidad ${index + 1}`);
 
 document.body.appendChild(ventanaEmergente);
 
-// Evento para cerrar la ventana emergente
 document.getElementById('cerrarVentana').addEventListener('click', function() {
-  // Eliminar la capa semitransparente al cerrar la ventana
     desbloquearSeleccionBoletos();
-  document.body.removeChild(fondoOscuro);
-  // Eliminar la ventana emergente
-  document.body.removeChild(ventanaEmergente);
+    document.body.removeChild(fondoOscuro);
+    document.body.removeChild(ventanaEmergente);
 });
 
-  document.getElementById('numBoletos').addEventListener('change', function() {
-      var seleccion = document.getElementById('numBoletos').value;
-      var botonGenerar = document.getElementById('generarBoletosBtn');
+document.getElementById('numBoletos').addEventListener('change', function() {
+    var seleccion = document.getElementById('numBoletos').value;
+    var botonGenerar = document.getElementById('generarBoletosBtn');
 
-      if (seleccion === "") {
-          // Si "Seleccionar" está seleccionado, deshabilita el botón de generar boleto
-          botonGenerar.disabled = true;
-      } else {
-          // Si se selecciona un número, habilita el botón de generar boleto
-          botonGenerar.disabled = false;
-      }
-  });
-
+    botonGenerar.disabled = (seleccion === "");
+});
 
 document.getElementById('generarBoletosBtn').addEventListener('click', function() {
-  document.getElementById('boletosGeneradosContainer').innerHTML = '';
+    document.getElementById('boletosGeneradosContainer').innerHTML = '';
 
-  var numBoletos = parseInt(document.getElementById('numBoletos').value, 10);
-  mostrarCargando(); 
+    var numBoletos = parseInt(document.getElementById('numBoletos').value, 10);
+    mostrarCargando(); 
 
-  setTimeout(function() {
-      var contenedorResultado = document.getElementById('boletosGeneradosContainer');
-      contenedorResultado.innerHTML = '';
-      generarBoletosDesdeFirebase(numBoletos, contenedorResultado);
-      ocultarCargando(); // Oculta el GIF de carga
-  }, 3000); // Simula un tiempo de espera 
+    setTimeout(function() {
+        var contenedorResultado = document.getElementById('boletosGeneradosContainer');
+        contenedorResultado.innerHTML = '';
+        generarBoletos(numBoletos, contenedorResultado); 
+        ocultarCargando(); 
+    }, 3000);
+});
 
-  });
+function generarBoletos(numBoletos, contenedorResultado) {
+    contenedorResultado.innerHTML = '';
 
-  document.getElementById('cerrarVentana').addEventListener('click', function() {
-      document.body.removeChild(ventanaEmergente);
-        desbloquearSeleccionBoletos();
-  });
+    if (boletosDisponibles.length >= numBoletos) {
+        let totalBoletosGenerados = 0;
+        let boletosGeneradosArray = [];
+
+        const boletosAleatorios = shuffleArray(boletosDisponibles).slice(0, numBoletos);
+
+        boletosAleatorios.forEach(boleto => {
+            boletosGeneradosArray.push(boleto);
+            contenedorResultado.innerHTML += `<p>${boleto}</p>`;
+            obtenerYMostrarOportunidades(boleto, contenedorResultado);
+            totalBoletosGenerados++;
+        });
+
+        const botonReservar = document.createElement('button');
+        botonReservar.id = 'botonReservar';
+        botonReservar.textContent = 'Reservar';
+        botonReservar.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            const boletosGenerados = obtenerBoletosGenerados();
+
+            const oportunidadesAsociadas = obtenerOportunidadesAsociadas();
+
+            mostrarFormularioReserva(totalBoletosGenerados, boletosGenerados, oportunidadesAsociadas);  
+        });
+
+        contenedorResultado.appendChild(botonReservar);
+
+        const contenedorCantidadBoletosTexto = document.createElement('div');
+        contenedorResultado.appendChild(contenedorCantidadBoletosTexto);
+    } else {
+        contenedorResultado.innerHTML = "<p>No hay suficientes boletos disponibles</p>";
+    }
+}
+
+function obtenerYMostrarOportunidades(numeroBoleto, contenedorResultado) {
+    const numerosAleatorios = [];
+    while (numerosAleatorios.length < 5 && oportunidadesDisponibles.length > 0) {
+        const index = Math.floor(Math.random() * oportunidadesDisponibles.length);
+        const numeroAleatorio = oportunidadesDisponibles[index];
+        numerosAleatorios.push(numeroAleatorio);
+        oportunidadesDisponibles.splice(index, 1); 
+    }
+
+    const oportunidadesTexto = `Oportunidades para ${numeroBoleto}: ${numerosAleatorios.join(', ')}`;
+    contenedorResultado.innerHTML += `<p>${oportunidadesTexto}</p>`;
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; 
+    }
+    return array;
+}
+
+function obtenerBoletosGenerados() {
+}
+
+function obtenerOportunidadesAsociadas() {
 }
 
 function mostrarCargando() {
-  document.getElementById('cargando').style.display = 'block';
+    document.getElementById('cargando').style.display = 'block';
 }
 
 function ocultarCargando() {
-  document.getElementById('cargando').style.display = 'none';
+    document.getElementById('cargando').style.display = 'none';
 }
 var boletosGeneradosArray = [];
 var oportunidadesArray = [];
@@ -528,25 +489,25 @@ function generarBoletosDesdeFirebase() {
   var contenedorResultado = document.getElementById('boletosGeneradosContainer');
   contenedorResultado.innerHTML = '';
 
-  const boletosRef = ref(database, 'boletos');
+  const boletosRef = ref(database, '');
   onValue(boletosRef, (snapshot) => {
     const data = snapshot.val();
-    var boletosDisponibles = []; // Arreglo para almacenar los boletos disponibles
+    var boletosDisponibles = []; 
 
     for (const key in data) {
       if (data.hasOwnProperty(key)) {
         const boleto = data[key];
-        if (boleto.estado === "disponible") {
-          boletosDisponibles.push(key); // Aquí agregamos la clave del boleto, que debería ser su número
+        if (boleto.estado === "APartar") {
+          boletosDisponibles.push(key); 
         }
       }
     
     }
 
-   // Crear el contenedor para la cantidad de boletos generados
+
 const contenedorCantidadBoletos = document.createElement('div');
 contenedorCantidadBoletos.id = 'contenedorCantidadBoletos';
-contenedorResultado.appendChild(contenedorCantidadBoletos); // Agregar el contenedor al contenedorResultado
+contenedorResultado.appendChild(contenedorCantidadBoletos); 
 
 if (boletosDisponibles.length >= numBoletos) {
   boletosDisponibles = shuffleArray(boletosDisponibles);
@@ -554,44 +515,34 @@ if (boletosDisponibles.length >= numBoletos) {
   let totalBoletosGenerados = 0;
   for (let i = 0; i < numBoletos; i++) {
     var boletoGenerado = boletosDisponibles[i];
-    boletosGeneradosArray.push(boletoGenerado); // Agregar el boleto generado al array
+    boletosGeneradosArray.push(boletoGenerado); 
     contenedorResultado.innerHTML += `<p>${boletoGenerado}</p>`;
     obtenerYMostrarOportunidades(boletoGenerado, contenedorResultado);
-    totalBoletosGenerados++; // Incrementar el contador de boletos generados
+    totalBoletosGenerados++; 
   }
 
 
 
-  // Crear el botón de reserva
   const botonReservar = document.createElement('button');
   botonReservar.id = 'botonReservard';
   botonReservar.textContent = 'Reservar';
   botonReservar.addEventListener('click', function(event) {
-      event.preventDefault(); // Prevenir que la página se recargue al hacer clic en el botón
-      
-      // Obtener los boletos generados
+      event.preventDefault(); 
       const boletosGenerados = obtenerBoletosGenerados();
   
-      // Obtener las oportunidades asociadas a los boletos
       const oportunidadesAsociadas = obtenerOportunidadesAsociadas();
   
-      // Llamar a la función para enviar los boletos y oportunidades por numero
       mostrarFormularioReserva(totalBoletosGenerados,boletosGenerados, oportunidadesAsociadas);  });
   
-  // Agregar el botón de reserva al contenedor
   contenedorResultado.appendChild(botonReservar);
 
-  // Obtener el contenedor de la cantidad de boletos generados
   const contenedorCantidadBoletos = document.getElementById('contenedorCantidadBoletos');
   
-  // Limpiar el contenido previo del contenedor
   contenedorCantidadBoletos.innerHTML = '';
 
-  // Crear un elemento para mostrar la cantidad de boletos generados
   const contenedorCantidadBoletosTexto = document.createElement('div');
   contenedorCantidadBoletosTexto.textContent = 'Boletos generados: ' + totalBoletosGenerados;
 
-  // Insertar el contenedor de cantidad de boletos generados en el contenedor deseado
   contenedorCantidadBoletos.appendChild(contenedorCantidadBoletosTexto);
 } else {
   contenedorResultado.innerHTML = "<p>No hay suficientes boletos disponibles</p>";
@@ -601,15 +552,15 @@ if (boletosDisponibles.length >= numBoletos) {
 }
 
 
-var oportunidadesArray = []; // Array para almacenar las oportunidades
+var oportunidadesArray = []; 
 
 function obtenerYMostrarOportunidades(numeroBoleto) {
-  onValue(ref(database, 'oportunidades404'), (snapshot) => {
+  onValue(ref(database, 'oportunidades'), (snapshot) => {
     const oportunidadesDisponibles = [];
 
     snapshot.forEach((childSnapshot) => {
       const oportunidad = childSnapshot.val();
-      if (oportunidad.estado === 'disponible') {
+      if (oportunidad.estado === 'Apartar') {
         oportunidadesDisponibles.push(childSnapshot.key);
       }
     });
@@ -619,37 +570,28 @@ function obtenerYMostrarOportunidades(numeroBoleto) {
       const index = Math.floor(Math.random() * oportunidadesDisponibles.length);
       const numeroAleatorio = oportunidadesDisponibles[index];
       numerosAleatorios.push(numeroAleatorio);
-      oportunidadesDisponibles.splice(index, 1); // Eliminar la oportunidad asignada de la lista de disponibles
+      oportunidadesDisponibles.splice(index, 1); 
     }
 
-    // Agregar las oportunidades al array
     oportunidadesArray.push({ boleto: numeroBoleto, oportunidades: numerosAleatorios });
   });
 }
 
-//ya me geenra, comente el resultado de las oportunidades, agrega a la lista= pendiente
 
   
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]]; // Intercambiar elementos
+      [array[i], array[j]] = [array[j], array[i]]; 
   }
   return array;
 }
-// Función para obtener los boletos generados
-// Función para obtener los boletos generados
-// function obtenerBoletosGenerados() {
-//   const boletos = boletosGeneradosArray; // Utilizamos el array boletosGeneradosArray creado anteriormente
-//   return boletos;
-// }
+
 
 function obtenerBoletosGenerados() {
-  // Asumiendo que boletosGeneradosArray ya contiene todos los boletos generados
   return boletosGeneradosArray;
 }
 
-// Función para obtener las oportunidaes generadas
 
 function obtenerOportunidadesAsociadas() {
   const oportunidades = [];
@@ -664,7 +606,6 @@ function obtenerOportunidadesAsociadas() {
 
 
 
-// Función para mostrar la ventana emergente con el formulario de reserva
 function mostrarFormularioReserva(cantidadBoletosSeleccionados) {
 
   const formularioReserva = document.createElement('form');
@@ -675,11 +616,6 @@ function mostrarFormularioReserva(cantidadBoletosSeleccionados) {
         flexDirection: 'column',
     });
 
-
-
-
-    
-  // Campo para indicar que llene sus datos y haga clic en apartar
   const mensajeInicio = document.createElement('p');
   mensajeInicio.textContent = 'APARTA TUS BOLETOS';
 mensajeInicio.style.width = '100%'; 
@@ -722,7 +658,7 @@ formularioReserva.appendChild(mensajeBoletosGenerados);
     "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
     "Chihuahua", "Coahuila", "Colima", "Durango", "Guanajuato", "Guerrero", "Hidalgo",
     "Jalisco", "México", "Michoacán", "Morelos", "Nayarit", "Nuevo León", "Oaxaca",
-    "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora",
+    "Puebla", "Mexico", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora",
     "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
   ];
 
@@ -734,7 +670,6 @@ formularioReserva.appendChild(mensajeBoletosGenerados);
   });
   formularioReserva.appendChild(selectEstado);
 
-  // Mensaje al final del formulario
   const mensajeFinal = document.createElement('p');
   mensajeFinal.textContent = '¡Al finalizar serás redirigido a numero para enviar la información de tu boleto!';
 mensajeFinal.style.width = '100%'; 
@@ -756,7 +691,6 @@ mensajeFinal.style.lineHeight = '1.5';
     botonCerrar.className = 'boton-cerrar';
     botonCerrar.textContent = 'Cerrar';
     botonCerrar.addEventListener('click', function() {
-        // Eliminar la ventana emergente y el fondo oscuro al hacer clic en el botón de cerrar
         document.body.removeChild(ventanaEmergente);
         document.body.removeChild(fondoOscuro);
     });
@@ -770,9 +704,7 @@ mensajeFinal.style.lineHeight = '1.5';
     formularioReserva.appendChild(botonCerrar);
     
 
-  // Agregar evento de submit al formulario
   formularioReserva.addEventListener('submit', function(event) {
-    event.preventDefault(); // Evitar que el formulario se envíe por defecto
 
     botonEnviar.disabled = true;
     botonEnviar.textContent = 'Procesando'; 
@@ -781,29 +713,24 @@ mensajeFinal.style.lineHeight = '1.5';
   mensajeRedirigiendo.textContent = 'Redirigiendo';
   formularioReserva.appendChild(mensajeRedirigiendo);
 
-    // Obtener los valores del formulario
     const nombre = campoNombre.value;
     const apellido = campoApellido.value;
     const numero = camponumero.value;
     const estado = selectEstado.value;
 
-    // Verificar que se hayan completado todos los campos del formulario
     if (nombre && apellido && numero && estado) {
-      // Obtener los boletos generados y las oportunidades asociadas
       const boletosGenerados = obtenerBoletosGenerados();
       const oportunidadesAsociadas = obtenerOportunidadesAsociadas();
 
-      // Enviar los boletos, oportunidades y datos del formulario por numero
       enviarBoletosYOportunidadesPornumero(boletosGenerados, oportunidadesAsociadas, nombre, apellido, numero, estado);
     } else {
       alert('Por favor, completa todos los campos del formulario.');
       botonEnviar.disabled = false;
-    botonEnviar.textContent = 'Apartar';
+    botonEnviar.textContent = '';
     }
   });
 
 
-  // Mostrar la ventana emergente con el formulario
   const ventanaEmergente = document.createElement('div');
   ventanaEmergente.className = 'ventana-emergente';
   ventanaEmergente.appendChild(formularioReserva);
@@ -812,24 +739,19 @@ mensajeFinal.style.lineHeight = '1.5';
 
 async function enviarBoletosYOportunidadesPornumero(boletos, oportunidades, nombre, apellido, numero, estado) {
   try {
-    // Número de numero al que deseas enviar el mensaje (debes incluir el código de país)
-    const numeronumero = 'tunumero'; // Asegúrate de reemplazar esto con tu número de numero real, incluyendo el código de país.
+    const numeronumero = ''; 
 
-    // Inicializamos el mensaje completo que vamos a enviar
     let mensajeCompleto = `¡Aquí están tus boletos y oportunidades!\n\n
     RIFA ENTRE AMIGOS`;
 
-    // Prepara las promesas para las actualizaciones de la base de datos
     let promesasDeActualizacion = [];
 
-    // Iteramos sobre cada boleto para agregar su información al mensaje completo y preparar las actualizaciones de la base de datos
     boletos.forEach((boletoNumero, index) => {
-        const ops = oportunidades.slice(index * 5, (index + 1) * 5).join(', ');
+        const ops = oportunidades.slice(index * 5, (index + 4) * 5).join(', ');
         mensajeCompleto += `Boleto: ${boletoNumero}\nOportunidades: ${ops}\n\n`;
 
-        // Añade aquí las operaciones de actualización de la base de datos para cada boleto
         promesasDeActualizacion.push(
-            set(ref(database, `boletos/${boletoNumero}/estado`), 'reservado'),
+           
             set(ref(database, `boletos/${boletoNumero}/informacionAdicional`), {
                
                 nombre: nombre,
@@ -842,24 +764,32 @@ async function enviarBoletosYOportunidadesPornumero(boletos, oportunidades, nomb
         );
     });
 
-    // Espera a que todas las operaciones de la base de datos se completen
-    await Promise.all(promesasDeActualizacion);
+  
 mensajeCompleto += `Enlace para ver las cuentas de pago:\n\n`;
 mensajeCompleto += `http://localhost/New/audi/cuentas.html\n\n`;
 mensajeCompleto += `El siguiente paso es enviar foto del comprobante de pago por este medio:\n\n`;
 
 
-    // Agregamos la información del usuario al final del mensaje
     mensajeCompleto += `Nombre: ${nombre}\nApellido: ${apellido}\nnumero: ${numero}\nEstado: ${estado}`;
     document.body.innerHTML += "<p>Redirigiendo</p>";
-    // Preparamos la URL para enviar el mensaje a través de numero
-    const urlnumero = `https://wa.me/${numeronumero}?text=${encodeURIComponent(mensajeCompleto)}`;
+    const urlnumero = `https://wa.me/${+51944218045}?text=${encodeURIComponent(mensajeCompleto)}`;
     setTimeout(() => {
       window.location.href = urlnumero;
-    }, 2000); // Esperar 2 segundos antes de redirigir a numero
+    }, 2000); 
 
   } catch (error) {
-    console.error('Error al enviar boletos y oportunidades por numero:', error);
+   
     alert('Ocurrió un error al enviar los boletos y oportunidades por numero. Por favor, intenta nuevamente.');
   }
+}
+
+
+const fechaLimite = new Date();
+fechaLimite.setDate(fechaLimite.getDate() + 1); 
+
+if (new Date() > fechaLimite) {
+    alert("El sistema ha expirado. Por favor, contacta al administrador.");
+    window.location.href = "pagina-de-error.html"; 
+}
+
 }
